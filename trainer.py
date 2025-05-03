@@ -4,8 +4,6 @@ from tensorflow.keras import mixed_precision
 import numpy as np
 from tensorflow.keras.optimizers import Adam
 
-# 1) ENABLE GPU & MIXED PRECISION
-# -----------------------------------------------------------------------------
 # Allow GPU memory growth
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 # Use all visible GPUs
@@ -16,7 +14,7 @@ mixed_precision.set_global_policy("mixed_float16")
 print("Compute dtype:", mixed_precision.global_policy().compute_dtype)  # float16
 print("Variable dtype:", mixed_precision.global_policy().variable_dtype)  # float32
 
-# 1) Paths & caption loading (run this first)
+# Paths & caption loading (run this first)
 images_dir    = '/content/flickr8k/Images'
 captions_file = '/content/flickr8k/captions.txt'
 
@@ -62,7 +60,7 @@ captions_input  = np.array(captions_input)
 captions_output = np.expand_dims(captions_output, -1)
 
 
-# 3) Define the loader + pipeline
+# Define the loader + pipeline
 batch_size = 1024
 
 def load_pair(path, cap_in, cap_out):
@@ -83,8 +81,6 @@ ds = (
 total = ds.cardinality().numpy()
 val_ds = ds.take(total//10)
 
-# 3) BUILD MODEL UNDER MIRRORED STRATEGY (optional for single-GPU)
-# -----------------------------------------------------------------------------
 strategy = tf.distribute.MirroredStrategy()
 with strategy.scope():
     # Encoder — MobileNetV2 frozen
@@ -128,14 +124,9 @@ with strategy.scope():
         metrics=["accuracy"]
     )
 
-# 4) TRAIN — with checkpointing
-# -----------------------------------------------------------------------------
-#HAVE IT OFF FOR THE FIRST RUN OF EPOCHS THEN UNCOMMENT TO KEEP ITERATING
-#model.load_weights("best_weights2.h5") 
-
 
 ckpt_cb = tf.keras.callbacks.ModelCheckpoint(
-    "best_weights2.h5",
+    "best_weights.h5",
     save_best_only=True,
     monitor="loss",
     verbose=1
@@ -144,9 +135,9 @@ early = tf.keras.callbacks.EarlyStopping(
     monitor="val_loss", patience=3, restore_best_weights=True)
 reduce_lr = tf.keras.callbacks.ReduceLROnPlateau(
     monitor="val_loss", factor=0.5, patience=2)
-model.fit(ds, epochs=100, callbacks=[ckpt_cb, early, reduce_lr])
+model.fit(ds, epochs=1000, callbacks=[ckpt_cb, early, reduce_lr])
 # Load best weights
-model.load_weights("best_weights2.h5")
+model.load_weights("best_weights.h5")
 with strategy.scope():
     model.compile(
         optimizer=Adam(learning_rate=1e-5),
@@ -154,10 +145,10 @@ with strategy.scope():
         metrics=["accuracy"]
     )
 
-# 3) Fine-tune for another 40 epochs
+# 3) Fine-tune
 history_finetune = model.fit(
     ds,
     validation_data=val_ds,
-    epochs=40,
+    epochs=400,
     callbacks=[ckpt_cb, early, reduce_lr]
 )

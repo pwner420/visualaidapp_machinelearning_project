@@ -2,15 +2,15 @@ import os
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
-# 1️⃣ Enable mixed precision training (if your model used it during training)
+# Enable mixed precision training (if your model used it during training)
 # This helps speed up training and reduce memory usage by using float16 where possible
 mixed_precision.set_global_policy("mixed_float16")
 
-# 2️⃣ Define model parameters
+#  Define model parameters
 vocab_size = 10000    # Size of the vocabulary (output classes)
 max_len = 15          # Maximum length of the caption sequence
 
-# 3️⃣ Define the encoder: MobileNetV2 (pretrained on ImageNet)
+# Define the encoder: MobileNetV2 (pretrained on ImageNet)
 #    - Include no classification head (include_top=False)
 #    - Use average pooling to reduce spatial dimensions
 encoder = tf.keras.applications.MobileNetV2(
@@ -21,7 +21,7 @@ encoder = tf.keras.applications.MobileNetV2(
 )
 encoder.trainable = False  # Freeze encoder during training/inference
 
-# 4️⃣ Define the decoder model as a function
+# Define the decoder model as a function
 def make_decoder(vocab_size, embed_dim=128, units=256):
     # Input: image features (from encoder)
     feat_in = tf.keras.Input(shape=(1280,), name="image_feat")
@@ -61,7 +61,7 @@ def make_decoder(vocab_size, embed_dim=128, units=256):
 # Build the decoder
 decoder = make_decoder(vocab_size)
 
-# 5️⃣ Assemble the full image captioning model
+# Assemble the full image captioning model
 # Input: image
 img_input = tf.keras.Input(shape=(224, 224, 3), name="img")
 
@@ -77,11 +77,11 @@ caps_out = decoder([feats, cap_input])
 # Build the complete model: image and caption in → predicted caption out
 model = tf.keras.Model([img_input, cap_input], caps_out)
 
-# 6️⃣ Load pretrained weights from .h5 file (assumes matching architecture)
+#Load pretrained weights from .h5 file (assumes matching architecture)
 model.load_weights("best_weights.h5")
 print("✅ weights loaded ✅")
 
-# 7️⃣ Convert the model to TensorFlow Lite format
+# Convert the model to TensorFlow Lite format
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 
 # Enable optimizations (like dynamic range quantization)
@@ -99,7 +99,7 @@ converter._experimental_lower_tensor_list_ops = False
 # Perform the actual conversion
 tflite_model = converter.convert()
 
-# 8️⃣ Save the converted .tflite model to disk
+# Save the converted .tflite model to disk
 with open("model.tflite", "wb") as f:
     f.write(tflite_model)
 
@@ -108,17 +108,15 @@ import os
 import tensorflow as tf
 from tensorflow.keras import mixed_precision
 
-# 1️⃣ Enable mixed precision training (if your model used it during training)
+#Enable mixed precision training (if your model used it during training)
 # This helps speed up training and reduce memory usage by using float16 where possible
 mixed_precision.set_global_policy("mixed_float16")
 
-# 2️⃣ Define model parameters
+#Define model parameters
 vocab_size = 10000    # Size of the vocabulary (output classes)
 max_len = 15          # Maximum length of the caption sequence
 
-# 3️⃣ Define the encoder: MobileNetV2 (pretrained on ImageNet)
-#    - Include no classification head (include_top=False)
-#    - Use average pooling to reduce spatial dimensions
+#Define the encoder: MobileNetV2 (pretrained on ImageNet)
 encoder = tf.keras.applications.MobileNetV2(
     input_shape=(224, 224, 3),   # Input image shape
     include_top=False,           # Exclude the top dense layers
@@ -127,7 +125,7 @@ encoder = tf.keras.applications.MobileNetV2(
 )
 encoder.trainable = False  # Freeze encoder during training/inference
 
-# 4️⃣ Define the decoder model as a function
+#Define the decoder model as a function
 def make_decoder(vocab_size, embed_dim=128, units=256):
     # Input: image features (from encoder)
     feat_in = tf.keras.Input(shape=(1280,), name="image_feat")
@@ -164,30 +162,29 @@ def make_decoder(vocab_size, embed_dim=128, units=256):
     # Return the decoder model
     return tf.keras.Model([feat_in, seq_inp], out, name="decoder")
 
-# Build the decoder
+#Build the decoder
 decoder = make_decoder(vocab_size)
 
-# 5️⃣ Assemble the full image captioning model
-# Input: image
+#Assemble the full image captioning model
 img_input = tf.keras.Input(shape=(224, 224, 3), name="img")
 
-# Input: caption sequence
+#Input: caption sequence
 cap_input = tf.keras.Input(shape=(None,), name="cap")  # dynamic length supported
 
-# Pass image through encoder
+#Pass image through encoder
 feats = encoder(img_input)
 
-# Pass image features and caption tokens to decoder
+#Pass image features and caption tokens to decoder
 caps_out = decoder([feats, cap_input])
 
-# Build the complete model: image and caption in → predicted caption out
+#Build the complete model: image and caption in → predicted caption out
 model = tf.keras.Model([img_input, cap_input], caps_out)
 
-# 6️⃣ Load pretrained weights from .h5 file (assumes matching architecture)
+#Load pretrained weights from .h5 file (assumes matching architecture)
 model.load_weights("best_weights.h5")
 print("✅ weights loaded ✅")
 
-# 7️⃣ Convert the model to TensorFlow Lite format
+#Convert the model to TensorFlow Lite format
 converter = tf.lite.TFLiteConverter.from_keras_model(model)
 
 # Enable optimizations (like dynamic range quantization)
@@ -205,7 +202,7 @@ converter._experimental_lower_tensor_list_ops = False
 # Perform the actual conversion
 tflite_model = converter.convert()
 
-# 8️⃣ Save the converted .tflite model to disk
+#Save the converted .tflite model to disk
 with open("model.tflite", "wb") as f:
     f.write(tflite_model)
 

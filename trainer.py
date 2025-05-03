@@ -4,6 +4,7 @@ from tensorflow.keras import mixed_precision
 import numpy as np
 from tensorflow.keras.optimizers import Adam
 
+
 # Allow GPU memory growth
 os.environ["TF_FORCE_GPU_ALLOW_GROWTH"] = "true"
 # Use all visible GPUs
@@ -74,7 +75,6 @@ ds = (
       .from_tensor_slices((image_paths, captions_input, captions_output))
       .shuffle(buffer_size=5000)
       .map(load_pair, num_parallel_calls=tf.data.AUTOTUNE)
-      # .cache()            # remove or replace with .cache("disk_cache.tf-data")
       .batch(batch_size)
       .prefetch(tf.data.AUTOTUNE)
 )

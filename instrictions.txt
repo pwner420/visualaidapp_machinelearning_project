@@ -1,0 +1,13 @@
+After downloading the repo:
+1. Create a virtual environment in python "3.7.4".
+2. Open terminal in directory and install dependencies with command:
+  pip install -r "requirements.txt"
+3. download dataset with commands (you can also just download it any other way and place it in the repo):
+  wget "https://github.com/awsaf49/flickr-dataset/releases/download/v1.0/flickr8k.zip"
+  unzip -q flickr8k.zip -d ./flickr8k
+  rm flickr8k.zip
+4. Adjust paths in trainer.py as necessary.
+5. start training model with command: python trainer.py
+6. once weights have been generated, convert to .tflite model with command: python converter.py
+7. when you have your .tflite model, place it in the assets folder in the app files.
+8. open the app project in android studio and run on an emulated device or make a .apk file to run on an actual phone. (give camera permissions to the app!)
